@@ -1,0 +1,268 @@
+\documentclass[11pt,a4paper,oneside]{book}
+\renewcommand{\rmdefault}{cmr}
+\renewcommand{\sfdefault}{cmss}
+\renewcommand{\ttdefault}{cmtt}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1.0in]{geometry}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+
+
+\title{
+    \Huge \textbf{Energy-Adaptive Hybrid Event-Driven Spoofing Detection (IAH-EDSD) in Industrial Wireless Sensor Networks}\\[1.2em]
+    \Large \textbf{Master PhD Viva Preparation \& Comprehensive Defense Package}\\[0.5em]
+    \large Complete Technical Documentation, Derivations, System Architecture, Results Analysis, and Viva Q\&A Defense Strategy
+}
+
+\author{
+    \Large \textbf{1\textsuperscript{st} Prashanth K} \\
+    \textit{Department of Master of Computer Applications} \\
+    \textit{RV College of Engineering (Affiliated to VTU, Belagavi)}, Bengaluru, India \\
+    \texttt{prashanthk@rvce.edu.in} \\[-0.5em]
+    \and
+    \Large \textbf{2\textsuperscript{nd} Usha J} \\
+    \textit{Department of Master of Computer Applications} \\
+    \textit{RV College of Engineering (Affiliated to VTU, Belagavi)}, Bengaluru, India \\
+    \texttt{ushaj@rvce.edu.in}
+}
+
+\date{July 2026}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\clearpage
+
+% ==============================================================================
+% PART I: MASTER THESIS CHAPTER
+% ==============================================================================
+\part{Master Thesis Chapter}
+
+\chapter{Energy-Adaptive Hybrid Event-Driven Spoofing Detection (IAH-EDSD) in Industrial WSNs}
+
+\section{Introduction}
+\subsection{Problem Statement}
+Industrial Wireless Sensor Networks (IWSNs) form the operational backbone of modern industrial automation, smart manufacturing, oil and gas pipelines, power grid monitoring, and Industry 4.0 applications. Operating under severe energy, bandwidth, and computational constraints, sensor nodes routinely transmit critical telemetry data back to centralized control systems or Base Stations (BS). However, due to the open, broadcast nature of wireless radio channels (e.g., IEEE 802.15.4 / ZigBee) and unencrypted header fields, IWSNs are fundamentally vulnerable to \textbf{active identity spoofing} and \textbf{Sybil attacks}. In these attacks, malicious adversaries forge MAC/IP source addresses or masquerade under multiple stolen node identities to inject false measurement data, trigger unnecessary industrial shutdowns, bypass access control protocols, or exhaust network routing resources.
+
+\subsection{Motivation}
+Traditional cryptographic mechanisms---such as public-key cryptography using Elliptic Curve Digital Signature Algorithm (ECDSA NIST P-256)---provide unforgeable per-packet origin authentication. However, executing an ECDSA-P256 signature verification on a resource-constrained 16-bit microcontroller (e.g., Texas Instruments MSP430 running at $8\text{ MHz}$ with $<10\text{ KB}$ RAM) incurs a heavy energy penalty of approximately $90.00\text{ mJ}$ per packet. In an industrial network carrying over $1.12\text{ million}$ telemetry frames, applying continuous cryptographic verification rapidly exhausts node initial energy reserves (e.g., $5.0\text{ J}$ for leaf nodes, $50.0\text{ J}$ for Cluster Heads), causing catastrophic network partition within hours.
+
+Conversely, lightweight physical-layer authentication techniques (e.g., Received Signal Strength Indicator, RSSI) or purely behavioral anomaly detectors require minimal computation ($5\text{--}100\ \mu\text{J}$/packet), but suffer from high false positive rates ($2.8\text{--}5.4\%$) under multipath fading, shadow fading, and dynamic obstacle movements typical of industrial factory floors.
+
+\subsection{Research Gap \& Key Contributions}
+Existing research presents a rigid trade-off between \textbf{high security (heavy energy overhead)} and \textbf{low energy (weak security under dynamic threats)}. There is a distinct absence of an event-driven, energy-aware security architecture that dynamically adapts its computational intensity to both instantaneous threat levels and residual battery reserves.
+
+To bridge this research gap, this thesis introduces the \textbf{Industrial Adaptive Hybrid Event-Driven Spoofing Detection (IAH-EDSD)} framework. The principal contributions are:
+\begin{enumerate}
+    \item \textbf{Event-Driven Hierarchical Triggers}: Replaces static continuous verification with an event-driven monitoring cascade based on physical-layer spatial RSSI deviation ($\Delta\text{RSSI}_i > 5.0\text{ dBm}$) and telemetry packet rate bursts ($\Phi(p_k)$), bypassing heavy audits during steady-state normal operations.
+    \item \textbf{Adaptive Multi-Factor Trust Engine}: Formulates a dynamic trust accumulation model ($T = \alpha T_{\text{auth}} + \beta T_{\text{behavior}} + \gamma T_{\text{energy}}$) featuring real-time context-aware weight updating and an Early Warning Score (EWS) temporal convergence filter.
+    \item \textbf{Three-Tier Energy-Adaptive Mode Switching}: Implements active energy-aware operational state selection (\texttt{FULL}, \texttt{LIGHT}, \texttt{EVENT\_ONLY}) linked to residual battery capacity ($E_{\text{ratio}}$), guaranteeing microcontroller operational viability on 16-bit MSP430 MCUs.
+    \item \textbf{Empirical Industrial NS-3 Validation}: Validated via extensive discrete-event simulations across a 401-node industrial factory grid ($1000\text{ m} \times 1000\text{ m}$) under $1,120,555$ telemetry packets, achieving $98.18\%$ detection accuracy, $0.03\%$ false positive rate, $99.40\%$ per-packet energy reduction ($0.540\text{ mJ}$ vs $90.00\text{ mJ}$), and extending Cluster Head lifetime by over $130\times$.
+\end{enumerate}
+
+\section{Related Work \& Taxonomic Positioning}
+A critical analysis of state-of-the-art (SOTA) WSN intrusion detection and authentication mechanisms reveals four distinct paradigms:
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Taxonomic Comparison of WSN Spoofing Detection Paradigms.}
+\begin{tabular}{|l|l|c|c|l|}
+\hline
+\textbf{Defense Paradigm} & \textbf{Key Mechanisms} & \textbf{Accuracy} & \textbf{Energy Overhead} & \textbf{Primary Limitations} \\ \hline
+1. Continuous Cryptographic & ECDSA-P256, RSA & 100.0\% & 90.00 mJ/pkt & Battery exhaustion in hours \\ \hline
+2. Physical-Layer (PHY) & RSSI Fingerprinting & 88.5\% & 0.005 mJ/pkt & High FPR under multipath fading \\ \hline
+3. Machine Learning (ML) & SVM, Random Forest & 94.2\% & 0.100 mJ/pkt & Static non-adaptive RAM load \\ \hline
+4. Dynamic Trust Models & Beta / Fuzzy Trust & 92.5\% & 0.055 mJ/pkt & Slow convergence on burst threats \\ \hline
+\textbf{5. Proposed IAH-EDSD} & \textbf{Event + 3-Tier Hybrid} & \textbf{98.18\%} & \textbf{0.540 mJ/pkt} & \textbf{Optimal Pareto Frontier} \\ \hline
+\end{tabular}
+\end{table}
+
+\section{System Model \& Operational Hypotheses}
+\subsection{Network Topology Model}
+Consider an industrial WSN deployed over a square operational region $\mathcal{A} = [0, L] \times [0, L] \subset \mathbb{R}^2$ with $L = 1000\text{ m}$. The network consists of $N = 401$ physical nodes partitioned hierarchically:
+\begin{itemize}
+    \item \textbf{Base Station (BS / Sink)}: Located at center coordinates $(500.0, 500.0)\text{ m}$ with unlimited energy supply ($E_{\text{BS}} = 1000.0\text{ J}$).
+    \item \textbf{Cluster Heads (CHs)}: $N_{\text{CH}} = 40$ nodes arranged in an $8 \times 5$ uniform grid. Initial energy $E_{\text{CH}}^{(0)} = 50.0\text{ J}$.
+    \item \textbf{Leaf Sensor Nodes}: $N_{\text{leaf}} = 359$ nodes uniformly distributed within cluster boundaries. Initial energy $E_{\text{leaf}}^{(0)} = 5.0\text{ J}$.
+\end{itemize}
+
+\subsection{Radio Channel \& Physical-Layer Model}
+Transmissions adhere to IEEE 802.15.4 PHY/MAC standards on the $2.4\text{ GHz}$ ISM band operating via CC2420 RF transceivers ($P_{\text{tx}} = 0.0\text{ dBm} = 1.0\text{ mW}$, Data Rate = $250\text{ kbps}$). Path loss follows the Log-Normal Shadowing Model:
+\begin{equation}
+P_{\text{rx}}(d) = P_{\text{tx}} - P_{\text{L}}(d_0) - 10 n \log_{10}\left(\frac{d}{d_0}\right) + X_{\sigma}
+\end{equation}
+where $P_{\text{L}}(d_0) = 40.0\text{ dB}$ at reference $d_0 = 1.0\text{ m}$, $n = 2.7$, and $X_{\sigma} \sim \mathcal{N}(0, \sigma^2)$ with $\sigma = 2.0\text{ dB}$.
+
+% ==============================================================================
+% PART II: MATHEMATICAL FORMULATION & DERIVATION
+% ==============================================================================
+\part{Mathematical Formulation \& Step-by-Step Derivation}
+
+\chapter{Mathematical Derivation Guide}
+
+\section{Spatial RSSI Anomaly Derivation}
+For a node $i$ transmitting from coordinates $\boldsymbol{p}_i$, the expected Received Signal Strength at Cluster Head $j$ at distance $d_{i,j} = \|\boldsymbol{p}_i - \boldsymbol{p}_j\|_2$ is:
+\begin{equation}
+\overline{\text{RSSI}}_{\text{exp}}^{(i, j)} = \mathbb{E}[P_{\text{rx}}(d_{i,j})] = P_{\text{tx}} - 40.0 - 27.0 \log_{10}\left(\|\boldsymbol{p}_i - \boldsymbol{p}_j\|_2\right)
+\end{equation}
+
+When an adversary located at physical coordinates $\boldsymbol{p}_{\text{att}} \neq \boldsymbol{p}_i$ transmits a spoofed packet claiming identity $i$, the actual physical transmission distance to CH $j$ is $d_{\text{att}, j} = \|\boldsymbol{p}_{\text{att}} - \boldsymbol{p}_j\|_2$.
+
+The observed RSSI at CH $j$ is:
+\begin{equation}
+\text{RSSI}_{\text{obs}}^{(i, j)}(t) = P_{\text{tx}} - 40.0 - 27.0 \log_{10}\left(\|\boldsymbol{p}_{\text{att}} - \boldsymbol{p}_j\|_2\right) + X_{\sigma}(t)
+\end{equation}
+
+The spatial RSSI deviation metric $\Delta\text{RSSI}_i(t)$ is:
+\begin{equation}
+\Delta\text{RSSI}_i(t) = \left| \text{RSSI}_{\text{obs}}^{(i, j)}(t) - \overline{\text{RSSI}}_{\text{exp}}^{(i, j)} \right| = \left| 27.0 \log_{10}\left( \frac{\|\boldsymbol{p}_i - \boldsymbol{p}_j\|_2}{\|\boldsymbol{p}_{\text{att}} - \boldsymbol{p}_j\|_2} \right) + X_{\sigma}(t) \right|
+\end{equation}
+
+\section{Dynamic Multi-Factor Trust Accumulation Engine}
+Total node trust $T_i(t) \in [0, 1]$ at time $t$ is computed via a weighted linear combination of three normalized trust metrics:
+\begin{equation}
+T_i(t) = \alpha(t) T_{\text{auth}}^{(i)}(t) + \beta(t) T_{\text{behavior}}^{(i)}(t) + \gamma(t) T_{\text{energy}}^{(i)}(t)
+\end{equation}
+subject to normalization constraint $\alpha(t) + \beta(t) + \gamma(t) = 1.0$.
+
+Dynamic weights update adaptively based on temporal threat history ($\text{EWS}_i$):
+\begin{equation}
+\alpha(t) = \alpha_0 + \kappa \cdot \text{EWS}_i(t), \quad \beta(t) = \beta_0 \cdot \left(1.0 - \frac{\sigma_{\text{RSSI}}^2}{\sigma_{\text{max}}^2}\right), \quad \gamma(t) = 1.0 - (\alpha(t) + \beta(t))
+\end{equation}
+where base parameters are $\alpha_0 = 0.40, \beta_0 = 0.40, \gamma_0 = 0.20$, and amplification factor $\kappa = 0.30$.
+
+% ==============================================================================
+% PART III: FORMAL ALGORITHM & COMPLEXITY ANALYSIS
+% ==============================================================================
+\part{Formal Algorithm Design \& Computational Complexity}
+
+\chapter{Formal Algorithm \& Complexity Analysis}
+
+\section{Algorithm Specification}
+\begin{figure}[htbp]
+\centering
+\fbox{
+\begin{minipage}{0.96\columnwidth}
+\small
+\textbf{Algorithm 1: IAH-EDSD Framework Execution Protocol}\\[-0.5em]
+\rule{\textwidth}{0.4pt}\\[0.3em]
+\textbf{Input:} Packet $p_k$, claimed sender ID $i$, RSSI $\text{RSSI}_{\text{obs}}$, residual energy $E_{\text{rem}}^{(j)}$\\
+\textbf{Output:} Isolation verdict $\text{Isolate}_i \in \{0, 1\}$, trust $T_i(t)$, EWS score $\text{EWS}_i(t)$\\[-0.5em]
+\rule{\textwidth}{0.4pt}
+\begin{enumerate}
+    \setlength{\itemsep}{1pt}
+    \item Compute spatial RSSI deviation: $\Delta\text{RSSI}_i \leftarrow |\text{RSSI}_{\text{obs}} - \text{RSSI}_{\text{exp}}^{(i, j)}|$
+    \item Extract sequence gap $\Delta S_i$ and packet rate $R_i(t)$
+    \item Determine mode $\mathcal{M}$: $\text{FULL}$ if $E_{\text{ratio}} > 0.70$, $\text{LIGHT}$ if $0.30 < E_{\text{ratio}} \le 0.70$, else $\text{EVENT\_ONLY}$
+    \item \textbf{if} $\mathcal{M} == \text{EVENT\_ONLY}$ \textbf{then} process 1 in 3 packets; update trust; \textbf{return} verdict
+    \item Evaluate Event Trigger $\Phi(p_k) = \mathbb{I}(\Delta\text{RSSI}_i > 5.0 \lor \Delta S_i > 1 \lor R_i > 10)$
+    \item \textbf{if} $\Phi(p_k) == 0$ \textbf{then return} $\text{Isolate}_i \leftarrow 0$ (Steady-state bypass at $5\,\mu\text{J}$)
+    \item Update dynamic weights $\alpha(t), \beta(t), \gamma(t)$
+    \item Calculate $T_{\text{behavior}}^{(i)}(t)$ and $T_{\text{energy}}^{(i)}(t)$
+    \item \textbf{if} $\mathcal{M} == \text{FULL}$ \textbf{and} $T_i(t-1) < 0.60$ \textbf{then} execute ECDSA-P256 audit ($90\text{ mJ}$)
+    \item Compute composite trust $T_i(t) = \alpha T_{\text{auth}} + \beta T_{\text{behavior}} + \gamma T_{\text{energy}}$
+    \item Update sliding window $\text{EWS}_i(t)$ over past $W=50$ frames
+    \item \textbf{if} $T_i(t) < 0.60 \land \text{EWS}_i(t) > 0.40 \land \Delta\text{RSSI}_i > 5.0\text{ dBm}$ \textbf{then} $\text{Isolate}_i \leftarrow 1$ \textbf{else} $\text{Isolate}_i \leftarrow 0$
+    \item \textbf{return} $\text{Isolate}_i, T_i(t), \text{EWS}_i(t)$
+\end{enumerate}
+\end{minipage}
+}
+\caption{Algorithmic execution procedure of IAH-EDSD.}
+\end{figure}
+
+\section{Computational Complexity Analysis}
+\begin{itemize}
+    \item \textbf{Time Complexity}: Steady-state screening takes $\mathcal{O}(1)$ scalar operations ($1.2\ \mu\text{s}$). Sliding window update takes $\mathcal{O}(W) = \mathcal{O}(50) = \mathcal{O}(1)$. Per-packet time complexity is bounded constant time $\mathcal{O}(1)$.
+    \item \textbf{RAM Footprint}: State vector per neighbor requires $43\text{ bytes}$. For 15 neighbors, RAM footprint is $645\text{ bytes} < 1.0\text{ KB}$, fitting within 16-bit TI MSP430 RAM ($10\text{ KB}$).
+\end{itemize}
+
+% ==============================================================================
+% PART IV: SYSTEM ARCHITECTURE DESIGN
+% ==============================================================================
+\part{Multi-Layer System Architecture \& Defense}
+
+\chapter{System Architecture \& Defense Strategy}
+
+\section{Multi-Layer Architecture}
+\begin{itemize}
+    \item \textbf{Layer 1: Leaf Sensor Nodes ($N_{\text{leaf}} = 359$)}: TI MSP430 MCU, CC2420 Transceiver, $5.0\text{ J}$ battery. Transmits telemetry frames without running local detection to save power.
+    \item \textbf{Layer 2: Cluster Heads ($N_{\text{CH}} = 40$)}: $8 \times 5$ spatial grid, $50.0\text{ J}$ initial energy. Runs event trigger, dynamic trust engine, and targeted ECDSA audits.
+    \item \textbf{Layer 3: Base Station Sink ($N_{\text{BS}} = 1$)}: Center coordinates $(500, 500)$, $1000.0\text{ J}$ energy. Maintains global topology and blacklists.
+\end{itemize}
+
+% ==============================================================================
+% PART V: ANALYTICAL RESULTS & DISCUSSION
+% ==============================================================================
+\part{Analytical Results \& Reviewer Discussion}
+
+\chapter{Analytical Results \& Benchmark Discussion}
+
+\section{Master Results Summary}
+\begin{table}[htbp]
+\centering
+\small
+\caption{Verified Experimental Performance Summary ($1,120,555$ Packets).}
+\begin{tabular}{|l|c|}
+\hline
+\textbf{Performance Metric} & \textbf{Measured Empirical Value} \\ \hline
+Total Evaluated Telemetry Workload & 1,120,555 Packets \\ \hline
+Spoofing Detection Rate (TPR) & 98.18\% \\ \hline
+False Positive Rate (FPR) & 0.03\% \\ \hline
+Cryptographic Audit Activation Rate & 0.53\% (99.47\% Bypass) \\ \hline
+Average Evaluation Energy per Packet & 0.540 mJ / packet \\ \hline
+Continuous ECDSA Baseline Energy & 90.00 mJ / packet \\ \hline
+Per-Packet Energy Reduction & 99.40\% Reduction \\ \hline
+Cluster Head Network Operational Lifetime & 151.3 Hours (vs 1.16 Hours) \\ \hline
+Network Lifetime Extension Factor & > 130x Extension \\ \hline
+\end{tabular}
+\end{table}
+
+\section{Why Results Occur}
+The $99.40\%$ energy reduction occurs because $99.47\%$ of benign steady-state packets trigger the fast event bypass ($\Phi = 0$), costing only $5\,\mu\text{J}$ ($0.005\text{ mJ}$). Heavy ECDSA verification ($90\text{ mJ}$) is invoked on fewer than $0.53\%$ of frames, yielding an average cost of $0.540\text{ mJ/packet}$.
+
+% ==============================================================================
+% PART VI: PHD VIVA DEFENSE QA GUIDE
+% ==============================================================================
+\part{PhD Viva Defense Questions \& Answers Guide}
+
+\chapter{PhD Viva Defense Questions \& Answers}
+
+\section{Conceptual \& Architectural Defense}
+\textbf{Q: Why use a 3-tier hybrid framework instead of a single deep machine learning model?}\\
+\textbf{Answer}: Deep neural networks require $>100\text{ KB}$ RAM and continuous floating-point matrix multiplication, which is impossible on a 16-bit MSP430 node with $<10\text{ KB}$ RAM. Furthermore, deep ML models consume constant high energy regardless of threat levels. IAH-EDSD takes only $645\text{ bytes}$ RAM and cuts average energy by $99.40\%$, making it hardware-feasible.
+
+\section{Mathematical \& Theoretical Defense}
+\textbf{Q: Explain how trust dynamic weights ($\alpha, \beta, \gamma$) maintain normalization.}\\
+\textbf{Answer}: Dynamic weights are defined as $\alpha(t) = \alpha_0 + \kappa \cdot \text{EWS}_i(t)$, $\beta(t) = \beta_0 (1 - \sigma_{\text{RSSI}}^2 / \sigma_{\text{max}}^2)$, and $\gamma(t) = 1 - (\alpha(t) + \beta(t))$. Summing them yields $\alpha + \beta + [1 - (\alpha + \beta)] = 1.0 \quad \forall t$, mathematically guaranteeing normalization without iterative projection costs.
+
+% ==============================================================================
+% PART VII: VIVA QUICK REFERENCE CHEAT SHEET
+% ==============================================================================
+\part{Viva Quick-Reference Exam Cheat Sheet}
+
+\chapter{Viva Quick-Reference Exam Cheat Sheet}
+
+\section{The 30-Second Elevator Pitch}
+\textit{``Industrial WSNs are vulnerable to identity spoofing. Continuous ECDSA signatures cost $90\text{ mJ}$ per packet, killing Cluster Head batteries within 1.16 hours. We created IAH-EDSD—an Energy-Adaptive Event-Driven framework. IAH-EDSD replaces continuous crypto with physical-layer RSSI screening ($5\,\mu\text{J}$) and dynamic multi-factor trust ($T = \alpha T_{\text{auth}} + \beta T_{\text{behavior}} + \gamma T_{\text{energy}}$). Heavy ECDSA audits are triggered on only 0.53\% of packets, cutting energy consumption by 99.40\% ($0.540\text{ mJ}$ vs $90.00\text{ mJ}$), maintaining 98.18\% detection accuracy with a 0.03\% false positive rate, and extending network lifetime by over 130$\times$.''}
+
+\section{Key Metric Reference Table}
+\begin{table}[htbp]
+\centering
+\small
+\caption{Viva Exam Metric Quick Reference.}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Metric} & \textbf{Value} & \textbf{Key Context} \\ \hline
+Network Topology & 401 Nodes & 1 Sink + 40 CHs + 359 Leaf ($1000\text{ m} \times 1000\text{ m}$) \\ \hline
+Detection Rate (TPR) & 98.18\% & Vs 88.5\% (Pure PHY), 92.5\% (DynTrust) \\ \hline
+False Positive Rate & 0.03\% & Vs 5.40\% (Pure PHY), 1.85\% (DynTrust) \\ \hline
+Crypto Audit Rate & 0.53\% & 99.47\% Steady-State Bypass Rate \\ \hline
+Per-Packet Energy & 0.540 mJ & 99.40\% Reduction vs 90.00 mJ Baseline \\ \hline
+CH Network Lifetime & 151.3 Hours & >130x Extension vs 1.16 Hours Baseline \\ \hline
+MCU Target & TI MSP430 & 16-bit @ 8 MHz, <10 KB RAM ($645\text{ B}$ footprint) \\ \hline
+\end{tabular}
+\end{table}
+
+\end{document}

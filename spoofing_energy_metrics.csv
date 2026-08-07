@@ -1,0 +1,18 @@
+Metric,Value
+Avg Energy Spent per CH (J),18.2905
+Avg Remaining Energy per CH (J),31.7095
+Min Remaining Energy (J),31.1168
+Max Remaining Energy (J),43.3574
+Proposed Energy/Pkt (mJ),0.5398
+Existing Energy/Pkt (mJ),90.0
+Energy Savings (%),99.4
+Proposed First Node Death (s),397.0
+Existing First Node Death (s),3.0
+Proposed 30pct Death (s),409.9
+Existing 30pct Death (s),3.3
+Lifetime Extension (%),13251.8
+Crypto Audit Trigger Rate (%),0.53
+FULL Mode Packets (%),26.24
+LIGHT Mode Packets (%),73.76
+EVENT_ONLY Mode Packets (%),0.0
+Total Packets Processed,1120555.0

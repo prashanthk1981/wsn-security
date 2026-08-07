@@ -1,0 +1,23 @@
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Python bytecode & cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Large uncompressed dataset files (>100MB rejected by GitHub)
+# The compressed spoofing_dataset_packets.csv.gz (43MB) is tracked instead
+**/spoofing_dataset_packets.csv
+
+# Logs & temp files
+*.log
+texput.log
+
+# IDE & OS files
+.DS_Store
+.vscode/
+.idea/

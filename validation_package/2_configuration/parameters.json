@@ -1,0 +1,64 @@
+{
+  "project": "Industrial Adaptive Hybrid Event-Driven Spoofing Detection (IAH-EDSD)",
+  "simulation_platform": "NS-3 v3.48 with Python cppyy bindings",
+  "network": {
+    "total_nodes": 401,
+    "cluster_heads": 40,
+    "leaf_sensor_nodes": 360,
+    "base_station": 1,
+    "attacker_ratio": "15% (~54-60 attacker nodes)",
+    "area": "1000m x 1000m (Industrial Factory Floor)",
+    "topology": "Cluster Heads in 8x5 grid, leaf nodes assigned to nearest CH"
+  },
+  "phy_mac": {
+    "standard": "IEEE 802.15.4 / CC2420",
+    "data_rate": "250 kbps",
+    "channel_delay": "2 ms",
+    "transmit_power_dbm": 0.0,
+    "radio_channel_model": "Log-Distance Path Loss (n=2.7, sigma=2.0 dB)"
+  },
+  "energy_parameters": {
+    "initial_energy_leaf_J": 5.0,
+    "initial_energy_ch_J": 50.0,
+    "initial_energy_bs_J": 1000.0,
+    "energy_tx_per_byte_J": 1.67e-6,
+    "energy_rx_per_byte_J": 1.80e-6,
+    "energy_sleep_per_sec_J": 1.0e-8
+  },
+  "traffic_model": {
+    "periodic_rate": "5 packets/sec/node",
+    "event_driven_bursts": "10-20 packets/sec during anomaly",
+    "transmission_interval_sec": 0.05,
+    "transmission_rounds": 3000,
+    "total_packets_generated": "~186,820"
+  },
+  "detection_algorithm": {
+    "name": "IAH-EDSD (7-Phase Pipeline)",
+    "phases": [
+      "Phase 1: RSSI Spatial Fingerprinting",
+      "Phase 2: Sequence Number Continuity Check",
+      "Phase 3: Transmission Rate Anomaly Detection",
+      "Phase 4: Lightweight Trust Fusion (Bayesian)",
+      "Phase 5: Adaptive ML Classification (Random Forest)",
+      "Phase 6: Early Warning Score (EWS) Temporal Aggregation",
+      "Phase 7: Selective Crypto Audit (ECDSA-P256 on-demand)"
+    ],
+    "trust_threshold": 0.60,
+    "rssi_deviation_threshold_dbm": 5.0,
+    "ews_alert_threshold": 0.40,
+    "isolation_rule": "Trust < 0.60 AND EWS > 0.40 AND delta_RSSI > 5.0 dBm"
+  },
+  "ml_pipeline": {
+    "models_evaluated": ["Naive Bayes", "Decision Tree", "Random Forest", "XGBoost"],
+    "selected_model": "Random Forest",
+    "features": ["RSSI", "delta_RSSI", "Trust", "EWS", "AuditFlag"],
+    "train_test_split": "70/30",
+    "scaler": "StandardScaler"
+  },
+  "outputs": {
+    "packet_telemetry_csv": "spoofing_dataset_packets.csv",
+    "energy_profile_csv": "spoofing_energy_per_node.csv",
+    "benchmark_summary_csv": "spoofing_benchmark_summary.csv",
+    "netanim_trace": "iah_edsd_netanim.xml"
+  }
+}
