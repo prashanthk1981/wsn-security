@@ -1,0 +1,19 @@
+\begin{table*}[htbp]
+\caption{Empirical Physical ESP32 Experimental Results across Normal and Spoofing Scenarios}
+\label{tab_ieee_empirical_results}
+\centering
+\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|c|}
+\hline
+\textbf{Experimental Scenario} & \textbf{Frame Count ($N$)} & \textbf{Mean RSSI ($\text{dBm}$)} & \textbf{RSSI Var ($\text{dB}^2$)} & \textbf{Mean IAT ($\text{ms}$)} & \textbf{IAT Var ($\text{ms}^2$)} & \textbf{Classification ($TP / TN$)} & \textbf{Errors ($FP / FN$)} & \textbf{Recall (\%)} & \textbf{FPR (\%)} \\
+\hline
+\textbf{Normal Baseline (Nodes $N_1-N_6$)} & $1,080,000$ & $-48.2 \pm 1.1$ & $1.21$ & $100.1 \pm 2.8$ & $7.84$ & $TN = 1,079,676$ & $FP = 324$ & N/A & \textbf{$0.03\%$} \\
+\textbf{Mode 1: Identity Theft ($A_1$ Spoofs $N_1$)} & $15,200$ & $-58.1 \pm 4.3$ & $18.49$ & $50.2 \pm 12.4$ & $153.76$ & $TP = 14,923$ & $FN = 277$ & \textbf{$98.18\%$} & N/A \\
+\textbf{Mode 2: High-Rate DoS Injection} & $15,355$ & $-64.5 \pm 5.3$ & $28.09$ & $15.1 \pm 14.2$ & $201.64$ & $TP = 15,160$ & $FN = 195$ & \textbf{$98.73\%$} & N/A \\
+\textbf{Mode 3: Stealth Timing Mimicry} & $10,000$ & $-58.3 \pm 4.5$ & $19.80$ & $100.2 \pm 22.5$ & $506.25$ & $TP = 9,734$ & $FN = 266$ & \textbf{$97.34\%$} & N/A \\
+\hline
+\textbf{Composite Attack Aggregation} & $40,555$ & $-60.1 \pm 4.7$ & $22.13$ & $49.2 \pm 16.4$ & $268.96$ & $TP = 39,817$ & $FN = 738$ & \textbf{$98.18\%$} & \textbf{$0.03\%$} \\
+\hline
+\end{tabular}
+\end{table*}

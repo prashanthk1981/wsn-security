@@ -1,0 +1,63 @@
+\section{Experimental Setup and Physical Testbed Architecture}
+\label{sec:experimental_setup}
+
+To empirically validate the \ac{HEDSD} framework under real-world physical layer dynamics and compute-constrained edge conditions, we designed and deployed an 8-node physical Wireless Sensor Network (\ac{WSN}) testbed using ESP32 microcontrollers. This section details the hardware architecture, network protocol stack, attack injection methodologies, and automated data collection pipeline.
+
+\subsection{Hardware Description and Node Roles}
+The physical testbed consists of eight ESP32-WROOM-32 NodeMCU development boards operating at a clock frequency of $240\,\text{MHz}$ with $520\,\text{KB}$ SRAM and integrated 2.4\,\text{GHz}$ 802.11 b/g/n transceiver modules. The nodes are assigned distinct functional roles within the network topology:
+
+\begin{enumerate}
+    \item \textbf{Cluster Head (CH) / Receiver Node ($N_{\text{CH}}$):} Positioned at origin $(0, 0)\,\text{m}$. The CH receives telemetry packets, extracts physical-layer \ac{RSSI} readings, logs high-precision microsecond packet arrival timestamps via hardware timer registers (\texttt{micros()}), and executes the \ac{HEDSD} event-driven state machine. An INA219 high-side DC current shunt sensor ($10\,\text{kHz}$ sampling frequency, $\pm 3.2\,\text{A}$ range) is interfaced with the CH to monitor real-time energy consumption.
+    \item \textbf{Legitimate Sensor Nodes ($N_1 - N_6$):} Distributed in a semi-circular topology at radii ranging from $3\,\text{m}$ to $8\,\text{m}$ relative to the CH. Legitimate nodes transmit periodic telemetry packets containing environment data, local transmit microsecond timestamps, and sequence numbers.
+    \item \textbf{Rogue Attacker Node ($A_1$):} Positioned at a distance of $12\,\text{m}$ from the CH at a $45^\circ$ angular displacement. The attacker board is configured to perform hardware \ac{MAC} address spoofing, identity forgery, and dynamic packet injection bursts.
+\end{enumerate}
+
+\begin{table}[htbp]
+\caption{Physical ESP32 Testbed System Parameters}
+\label{tab:esp32_params}
+\centering
+\begin{tabular}{ll}
+\hline
+\textbf{Parameter} & \textbf{Operational Value / Configuration} \\ \hline
+Microcontroller Platform & ESP32-WROOM-32 (Tensilica LX6 @ $240\,\text{MHz}$) \\
+Radio Protocol & ESP-NOW (2.4\,\text{GHz} 802.11 b/g/n Action Frames) \\
+RF Frequency & Channel 1 ($2.412\,\text{GHz}$, $20\,\text{MHz}$ Bandwidth) \\
+TX Output Power & $+19.5\,\text{dBm}$ (Max 802.11b power) \\
+Payload Overhead & 14 Bytes Application Data + 38 Bytes PHY/MAC Header \\
+Nominal Telemetry Period & $100\,\text{ms}$ ($10\,\text{Hz}$ rate per node) \\
+Clock Precision & Hardware Microsecond Timer (\texttt{micros()}) \\
+Energy Sensor & INA219 High-Side Current Shunt ($10\,\text{kHz}$ Sampling) \\
+Supply Voltage & $3.3\,\text{V}$ Regulated DC \\
+Testbed Area & $15\,\text{m} \times 15\,\text{m}$ Indoor Multipath Environment \\ \hline
+\end{tabular}
+\end{table}
+
+\subsection{Network Configuration and Communication Protocol}
+Communication across the WSN testbed is implemented using \textbf{ESP-NOW}, a connectionless, low-latency, peer-to-peer Wi-Fi Action Frame protocol operating at Layer 2 (Data Link Layer). ESP-NOW bypasses traditional Wi-Fi access point association handshakes, reducing frame preamble transmission overhead to $608\,\mu\text{s}$. 
+
+All nodes are locked to Wi-Fi Channel 1 ($2.412\,\text{GHz}$). Automatic power-saving sleep modes on the 802.11 PHY layer are disabled to eliminate artificial MAC-layer latency jitter. Telemetry packets are structured into a 14-byte packed binary payload comprising a 1-byte node identifier, 4-byte sequence number ($s_k$), 4-byte transmit microsecond timestamp ($t_k^{\text{tx}}$), 4-byte sensor measurement, and 1-byte ground-truth status flag.
+
+\subsection{Attack Scenario Implementation}
+To evaluate the resilience of \ac{HEDSD} against sophisticated identity theft, Attacker Node $A_1$ impersonates Legitimate Victim Node $N_1$ ($\text{MAC} = \text{24:6F:28:11:22:33}$) by overriding its hardware eFuse MAC address via the ESP-IDF API:
+\begin{equation}
+    \texttt{esp\_wifi\_set\_mac(WIFI\_IF\_STA, victim\_mac);}
+\end{equation}
+
+Three distinct spoofing attack scenarios are executed:
+\begin{enumerate}
+    \item \textbf{Scenario 1: Baseline Identity Theft (Static Impersonation):} $A_1$ transmits spoofed frames carrying $N_1$'s identity at the nominal $100\,\text{ms}$ rate. Because $A_1$ ($12\,\text{m}$) and $N_1$ ($5\,\text{m}$) reside at distinct physical spatial coordinates, the CH receives interleaved packets with bimodal \ac{RSSI} distributions ($-52\,\text{dBm}$ vs. $-71\,\text{dBm}$).
+    \item \textbf{Scenario 2: High-Rate Injection Attack (DoS Burst):} $A_1$ injects high-frequency spoofed telemetry bursts every $10-20\,\text{ms}$, attempting to induce receiver queue overflow and desynchronize $N_1$'s sequence number counter ($\Delta s_k \neq 1$).
+    \item \textbf{Scenario 3: Timing Mimicry Attack (Stealth Impersonation):} $A_1$ matches $N_1$'s nominal $100\,\text{ms}$ interval but injects packets mid-slot with a $40\,\text{ms}$ phase offset, creating microsecond inter-packet clustering while evading primitive frequency-based rate limiters.
+\end{enumerate}
+
+\subsection{Data Collection Pipeline and Measurement Metrics}
+The Cluster Head $CH$ streams real-time binary reception records over a high-speed $115,200\,\text{baud}$ USB Serial interface to a Python-based telemetry collector. For each arriving packet $k$, the data collection pipeline records:
+\begin{enumerate}
+    \item \textbf{Hardware RSSI ($\text{RSSI}_k$):} Measured signal strength in $\text{dBm}$ via the 802.11 AGC register.
+    \item \textbf{Arrival Timestamp ($t_k$):} Microsecond reception clock tick captured via \texttt{micros()}.
+    \item \textbf{Inter-Arrival Time ($\text{IAT}_k$):} Relative temporal spacing between consecutive frames ($\text{IAT}_k = t_k - t_{k-1}$).
+    \item \textbf{Sequence Number Jump ($\Delta s_k$):} Sequence counter difference ($\Delta s_k = s_k - s_{k-1}$).
+    \item \textbf{Energy Expenditure ($\dot{E}_i$):} Synchronous INA219 current draw ($\text{mA}$) integrated over packet processing intervals ($E = V_{\text{CC}} \int I(t) \, dt$).
+\end{enumerate}
+
+Over ten independent experimental runs ($N = 10$) across Line-of-Sight (\ac{LOS}) and Non-Line-of-Sight (\ac{NLOS}) indoor multipath environments, the pipeline accumulated $1,120,555$ telemetry packets, forming a benchmark dataset for real-world spoofing validation.

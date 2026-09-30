@@ -1,4 +1,4 @@
 Model,Detection Rate (%),FPR (%),Energy/Pkt (mJ),Energy Reduction (%),Network Lifetime Extension (%)
 Unprotected WSN,96.38,0.0,0.0,100.0,0.0
 Existing (Continuous + Static),100.0,0.0,90.0,0.0,0.0
-Proposed (IAH-EDSD),98.18,0.03,0.54,99.4,13251.8
+Proposed HEDSD,98.18,0.03,0.54,99.4,13251.8

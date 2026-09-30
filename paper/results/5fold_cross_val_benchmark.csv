@@ -1,0 +1,4 @@
+Method,Accuracy (%),Precision (%),Recall (%),F1-Score,FPR (%),Energy (mJ/Pkt)
+RSSI-Only Thresholding,85.54 ± 0.17,92.97 ± 0.86,48.09 ± 0.78,0.634 ± 0.006,1.28 ± 0.18,0.005
+Lightweight Random Forest,92.38 ± 0.14,90.50 ± 0.92,79.04 ± 1.29,0.844 ± 0.004,2.92 ± 0.36,0.35
+Proposed Multi-Factor (Dynamic),88.02 ± 0.36,91.57 ± 1.53,59.45 ± 0.60,0.721 ± 0.008,1.93 ± 0.38,0.054
