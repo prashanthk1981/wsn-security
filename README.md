@@ -1,6 +1,6 @@
-# HEDSD: Hybrid Event-Driven Spoofing Detection in Wireless Sensor Networks
+# Hybrid Event Driven Spoofing Detection in Energy Constrained Wireless Sensor Networks
 
-Official repository for **"Event-Driven Multi-Feature Spoofing Detection and Battery-Adaptive Verification in Wireless Sensor Networks"** (Submitted to **ICICNIS 2026**, IEEE Conference ID: `#70805`).
+Official repository for **"Hybrid Event Driven Spoofing Detection in Energy Constrained Wireless Sensor Networks"** (Submitted to **ICICNIS 2026**, IEEE Conference ID: `#70805`).
 
 ---
 
